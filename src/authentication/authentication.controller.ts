@@ -6,7 +6,7 @@ import RequestWithUser from './requestWithUser.interface';
 import { LocalAuthenticationGuard } from './localAuthentication.guard';
 import { Response } from 'express';
 import JwtAuthenticationGuard from './jwt-authentication.guard';
-@Controller('authentication')
+@Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
 @SerializeOptions({
     strategy: 'excludeAll'

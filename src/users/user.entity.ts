@@ -27,6 +27,8 @@ class User {
  
   @OneToMany(() => Post, (post: Post) => post.author)
   public posts: Post[];
+
+  
 }
  
 export default User;
