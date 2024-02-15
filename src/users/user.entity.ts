@@ -13,6 +13,12 @@ class User {
  
   @Column()
   public name: string;
+
+  @Column({
+    nullable: true
+  })
+  @Exclude()
+  public currentHashedRefreshToken?: string;
  
   @Column()
   @Exclude()

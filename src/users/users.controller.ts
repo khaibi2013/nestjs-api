@@ -1,6 +1,7 @@
-import { Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import JwtAuthenticationGuard from '../authentication/jwt-authentication.guard';
 import { diskStorage } from 'multer';
 import * as path from 'path';
 import { Observable, of } from 'rxjs';
@@ -22,6 +23,7 @@ export class UsersController {
     constructor(private usersService: UsersService) {}
 
     @Post('upload')
+    @UseGuards(JwtAuthenticationGuard)
     @UseInterceptors(FileInterceptor('file', storage))
     uploadFile(@UploadedFile() file): Observable<Object> {
         console.log(file);

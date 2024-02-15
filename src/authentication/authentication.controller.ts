@@ -1,20 +1,48 @@
-
-import { Body, Req, Controller, HttpCode, Post, UseGuards, Res, Get, UseInterceptors, ClassSerializerInterceptor, SerializeOptions } from '@nestjs/common';
+import { Body, Req, Controller, HttpCode, Post, UseGuards, Res, Get, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import RegisterDto from './dto/register.dto';
 import RequestWithUser from './requestWithUser.interface';
 import { LocalAuthenticationGuard } from './localAuthentication.guard';
 import { Response } from 'express';
 import JwtAuthenticationGuard from './jwt-authentication.guard';
+import JwtRefreshGuard from './jwt-refresh.guard';
+import { UsersService } from '../users/users.service';
+
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
-@SerializeOptions({
-    strategy: 'excludeAll'
-  })
 export class AuthenticationController {
   constructor(
-    private readonly authenticationService: AuthenticationService
+    private readonly authenticationService: AuthenticationService,
+    private readonly usersService: UsersService,
   ) {}
+
+  @UseGuards(JwtRefreshGuard)
+  @Get('refresh')
+  refresh(@Req() request: RequestWithUser) {
+    const accessTokenCookie = this.authenticationService.getCookieWithJwtAccessToken(request.user.id);
+
+    request.res.setHeader('Set-Cookie', accessTokenCookie);
+    return request.user;
+  }
+  
+  @HttpCode(200)
+  @UseGuards(LocalAuthenticationGuard)
+  @Post('log-in')
+  async logIn(@Req() request: RequestWithUser) {
+    const { user } = request;
+    const accessTokenCookie = this.authenticationService.getCookieWithJwtAccessToken(user.id);
+    const refreshTokenCookie = this.authenticationService.getCookieWithJwtRefreshToken(user.id);
+
+    // Lỗi ở đây: refreshToken không được định nghĩa hoặc gán giá trị
+    const refreshToken = ''; // Điền giá trị cho refreshToken ở đây
+
+    await this.usersService.setCurrentRefreshToken(refreshToken, user.id);
+
+    // Lỗi ở đây: refreshTokenCookie là một đối tượng,'
+    request.res.setHeader('Set-Cookie', [accessTokenCookie, refreshTokenCookie.cookie]);
+    return user;
+  }
+
   @UseGuards(JwtAuthenticationGuard)
   @Get()
   authenticate(@Req() request: RequestWithUser) {
@@ -22,36 +50,17 @@ export class AuthenticationController {
     user.password = undefined;
     return user;
   }
- 
- @Post('register')
-async register(@Body() registrationData: RegisterDto) {
-  return this.authenticationService.register(registrationData);
-}
- 
-@HttpCode(200)
-@UseGuards(LocalAuthenticationGuard)
-@Post('log-in')
-async logIn(@Req() request: RequestWithUser, @Res() response: Response) {
-  const {user} = request;
-  const cookie = this.authenticationService.getCookieWithJwtToken(user.id);
-  response.setHeader('Set-Cookie', cookie);
-  user.password = undefined;
-  return response.send(user);
-}
+  
+  @Post('register')
+  async register(@Body() registrationData: RegisterDto) {
+    return this.authenticationService.register(registrationData);
+  }
 
-// @HttpCode(200)
-// @UseGuards(LocalAuthenticationGuard)
-// @Post('log-in')
-// async logIn(@Req() request: RequestWithUser) {
-//   const {user} = request;
-//   const cookie = this.authenticationService.getCookieWithJwtToken(user.id);
-//   request.res.setHeader('Set-Cookie', cookie);
-//   return user;
-// }
-@UseGuards(JwtAuthenticationGuard)
+  @UseGuards(JwtAuthenticationGuard)
   @Post('log-out')
-  async logOut(@Req() request: RequestWithUser, @Res() response: Response) {
-    response.setHeader('Set-Cookie', this.authenticationService.getCookieForLogOut());
-    return response.sendStatus(200);
+  @HttpCode(200)
+  async logOut(@Req() request: RequestWithUser) {
+    await this.usersService.removeRefreshToken(request.user.id);
+    request.res.setHeader('Set-Cookie', this.authenticationService.getCookiesForLogOut());
   }
 }
