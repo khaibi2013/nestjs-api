@@ -10,7 +10,7 @@ class Post {
   @Column()
   public title: string;
  
-  @Column()
+  @Column({ nullable: true })
   public content: string;
  
   @Column({ nullable: true })
@@ -21,8 +21,13 @@ class Post {
   public author: User;
  
   @ManyToMany(() => Category, (category: Category) => category.posts)
-@JoinTable()
-public categories: Category[];
+  @JoinTable()
+  public categories: Category[];
+
+  @Column('text', { array: true,nullable: true })
+  public paragraphs: string[];
+
+  
 }
  
 export default Post;

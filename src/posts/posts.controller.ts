@@ -1,19 +1,29 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards, UseInterceptors } from '@nestjs/common';
 import PostsService from './posts.service';
 import CreatePostDto from './dto/createPost.dto';
 import UpdatePostDto from './dto/updatePost.dto';
 import JwtAuthenticationGuard from 'src/authentication/jwt-authentication.guard';
 import FindOneParams from 'src/utils/findOneParams';
 import RequestWithUser from 'src/authentication/requestWithUser.interface';
+import { PaginationParams } from '../utils/types/paginationParams';
  
 @Controller('posts')
+@UseInterceptors(ClassSerializerInterceptor)
 export default class PostsController {
   constructor(
     private readonly postsService: PostsService
   ) {}
  
+  // @Get()
+  // getAllPosts() {
+  //   return this.postsService.getAllPosts();
+  // }
+
   @Get()
-  getAllPosts() {
+  async getPosts(@Query('search') search: string) {
+    if (search) {
+      return this.postsService.searchForPosts(search);
+    }
     return this.postsService.getAllPosts();
   }
  
