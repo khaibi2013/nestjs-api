@@ -20,11 +20,14 @@ export default class PostsController {
   // }
 
   @Get()
-  async getPosts(@Query('search') search: string) {
+  async getPosts(
+    @Query('search') search: string,
+    @Query() { offset, limit }: PaginationParams
+  ) {
     if (search) {
-      return this.postsService.searchForPosts(search);
+      return this.postsService.searchForPosts(search, offset, limit);
     }
-    return this.postsService.getAllPosts();
+    return this.postsService.getAllPosts(offset, limit);
   }
  
   

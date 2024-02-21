@@ -5,9 +5,10 @@ import * as Joi from '@hapi/joi';
 import { DatabaseModule } from './database/database.module';
 
 import { UsersModule } from './users/users.module';
-import { SearchModule } from './search/search.module';
+
 import { AuthenticationModule } from './authentication/authentication.module';
 import { CategoriesModule } from './categories/categories.module';
+import { SubscribersModule } from './subcribers/subcribers.module';
 
 
 
@@ -31,9 +32,7 @@ import { CategoriesModule } from './categories/categories.module';
         PORT: Joi.number(),
         JWT_SECRET: Joi.string().required(),
         JWT_EXPIRATION_TIME: Joi.string().required(),
-        ELASTICSEARCH_NODE: Joi.string(),
-        ELASTICSEARCH_USERNAME: Joi.string(),
-        ELASTICSEARCH_PASSWORD: Joi.string(),
+        
         
         
       })
@@ -41,7 +40,8 @@ import { CategoriesModule } from './categories/categories.module';
     UsersModule,
     AuthenticationModule,
     CategoriesModule,
-    SearchModule,
+    SubscribersModule,
+    
   ],
   controllers: [],
   providers: [],

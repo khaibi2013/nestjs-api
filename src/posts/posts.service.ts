@@ -7,15 +7,16 @@ import { In, Repository } from 'typeorm';
 import Post from './post.entity';
 import PostNotFoundException from './exception/postNotFund.exception';
 import User from 'src/users/user.entity';
-import PostsSearchService from './postsSearch.service';
+
 
 
 @Injectable()
 export default class PostsService {
+  
   constructor(
     @InjectRepository(Post)
     private postsRepository: Repository<Post>,
-    private postsSearchService: PostsSearchService,
+    
   ) {}
   
 
@@ -40,9 +41,8 @@ export default class PostsService {
   async deletePost(id: number) {
     const deleteResponse = await this.postsRepository.delete(id);
     if (!deleteResponse.affected) {
-      throw new PostNotFoundException(id);
+      throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
     }
-    await this.postsSearchService.remove(id);
   }
   async getAllPosts(offset?: number, limit?: number) {
     const [items, count] = await this.postsRepository.findAndCount({
@@ -59,27 +59,40 @@ export default class PostsService {
       count
     }
   }
+
   async createPost(post: CreatePostDto, user: User) {
     const newPost = await this.postsRepository.create({
       ...post,
-      author: user
+      author: user,
     });
     await this.postsRepository.save(newPost);
-    this.postsSearchService.indexPost(newPost);
     return newPost;
   }
- 
-  async searchForPosts(text: string) {
-    const results = await this.postsSearchService.search(text);
-    const ids = results.map(result => result.id);
-    if (!ids.length) {
-      return [];
-    }
+
+  async searchForPosts(search: string, offset: number, limit: number) {
     return this.postsRepository
-      .find({
-        where: { id: In(ids) }
-      });
+      .createQueryBuilder('post')
+      .where('post.title LIKE :search', { search: `%${search}%` })
+      .orWhere('post.content LIKE :search', { search: `%${search}%` })
+      .orderBy('post.id', 'ASC')
+      .skip(offset)
+      .take(limit)
+      .getMany();
   }
+ 
+  
+
+  // async searchForPosts(text: string) {
+  //   const results = await this.postsSearchService.search(text);
+  //   const ids = results.map(result => result.id);
+  //   if (!ids.length) {
+  //     return [];
+  //   }
+  //   return this.postsRepository
+  //     .find({
+  //       where: { id: In(ids) }
+  //     });
+  // }
   
 
 }
