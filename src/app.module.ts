@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { AuthenticationModule } from './authentication/authentication.module';
 import { CategoriesModule } from './categories/categories.module';
 import { SubscribersModule } from './subcribers/subcribers.module';
+import { ChatModule } from './chat/chat.module';
 
 
 
@@ -20,6 +21,8 @@ import { SubscribersModule } from './subcribers/subcribers.module';
     PostsModule,
     ConfigModule.forRoot({
       validationSchema: Joi.object({
+        
+
         JWT_ACCESS_TOKEN_SECRET: Joi.string().required(),
         JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
         JWT_REFRESH_TOKEN_SECRET: Joi.string().required(),
@@ -41,6 +44,7 @@ import { SubscribersModule } from './subcribers/subcribers.module';
     AuthenticationModule,
     CategoriesModule,
     SubscribersModule,
+    ChatModule,
     
   ],
   controllers: [],
