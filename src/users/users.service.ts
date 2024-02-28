@@ -11,6 +11,18 @@ export class UsersService {
     @InjectRepository(User)
     private usersRepository: Repository<User>
   ) {}
+
+  markPhoneNumberAsConfirmed(userId: number) {
+    return this.usersRepository.update({ id: userId }, {
+      isPhoneNumberConfirmed: true
+    });
+  }
+  async markEmailAsConfirmed(email: string) {
+    return this.usersRepository.update({ email }, {
+      isEmailConfirmed: true
+    });
+  }
+
   async removeRefreshToken(userId: number) {
     return this.usersRepository.update(userId, {
       currentHashedRefreshToken: null

@@ -8,8 +8,17 @@ class User {
   @PrimaryGeneratedColumn()
   public id: number;
  
-  @Column({ unique: true })
+  @Column({ unique: true})
   public email: string;
+
+  @Column({ default: false })
+  public isEmailConfirmed: boolean;
+
+  @Column({ nullable: true }) // sau bo null
+  public phoneNumber: string;
+  
+  @Column({ default: false })
+  public isPhoneNumberConfirmed: boolean;
  
   @Column()
   public name: string;
@@ -33,6 +42,9 @@ class User {
  
   @OneToMany(() => Post, (post: Post) => post.author)
   public posts: Post[];
+
+  // @Column({ default: false })
+  // public isRegisteredWithGoogle: boolean;
 
   
 }
